@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ChaseMate: get paid without the awkward emails</title>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Inter:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{--y:#ffcf33;--ink:#121a33;--paper:#f3eee1;--red:#d7263d;--green:#12a150;--amber:#e69500;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 Inter,system-ui,sans-serif}
+h1,h2,h3,.slab{font-family:"Alfa Slab One",Georgia,serif;font-weight:400;margin:0}
+.type,textarea,.log{font-family:"Special Elite","Courier New",monospace}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+button,select,input,textarea{font:inherit;color:inherit}
+.btn{border:3px solid var(--ink);background:var(--card);padding:10px 16px;font-weight:700;border-radius:8px;cursor:pointer;box-shadow:4px 4px 0 var(--ink);transition:transform .08s,box-shadow .08s;text-decoration:none;display:inline-block}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.btn:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+.btn.dark{background:var(--ink);color:#fff}.btn.yel{background:var(--y)}
+.btn.pp{background:#ffc439}.btn.sm{padding:6px 10px;font-size:13px;box-shadow:3px 3px 0 var(--ink)}
+.btn:disabled{opacity:.5;cursor:wait}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+/* hero */
+.hero{background:var(--y);border-bottom:4px solid var(--ink);padding:18px 0 28px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{font-family:"Alfa Slab One";font-size:24px}.logo b{background:var(--ink);color:var(--y);padding:0 8px;margin-left:4px;border-radius:4px}
+.pill{border:2px solid var(--ink);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:700;background:#fff}
+.hg{display:grid;grid-template-columns:1.3fr 1fr;gap:30px;align-items:center;margin-top:14px}
+.hero h1{font-size:clamp(34px,5.5vw,64px);line-height:1.02}
+.hero h1 mark{background:var(--ink);color:var(--y);padding:0 10px;border-radius:6px}
+.hero p{max-width:520px;font-size:17px;margin:14px 0 0}
+.sample{background:#fff;border:3px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:18px;transform:rotate(2.5deg);position:relative;max-width:340px;justify-self:center}
+.sample .amt{font-family:"Alfa Slab One";font-size:38px}
+/* stamps */
+.stamp{font-family:"Alfa Slab One";border:3px solid;padding:2px 10px;border-radius:6px;transform:rotate(-6deg);display:inline-block;letter-spacing:1px;background:rgba(255,255,255,.7)}
+.stamp.draft{color:var(--amber)}.stamp.pending{color:#2457d6}.stamp.paid{color:var(--green)}.stamp.overdue{color:var(--red);position:absolute;right:-14px;top:-14px;font-size:20px}
+.slam{animation:slam .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes slam{from{transform:scale(2.4) rotate(-14deg);opacity:0}to{transform:scale(1) rotate(-6deg);opacity:1}}
+/* stats */
+.strip{background:var(--ink);color:#fff;border-bottom:4px solid var(--y)}
+.strip .wrap{display:grid;grid-template-columns:repeat(3,1fr)}
+.stat{background:none;border:0;border-right:2px dashed #ffffff40;color:#fff;text-align:left;padding:14px 18px;cursor:pointer}
+.stat:last-child{border:0}.stat:hover,.stat.on{background:#ffffff14}
+.stat small{color:var(--y);font-weight:700;display:block}
+.stat .n{font-family:"Alfa Slab One";font-size:30px}.stat span.c{color:#ffffffb0;font-size:13px;margin-left:6px}
+.stat.on{box-shadow:inset 0 -4px var(--y)}
+/* workspace */
+.ws{display:grid;grid-template-columns:380px 1fr;gap:22px;padding:22px 0 50px;align-items:start}
+.panel{background:var(--card);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);border-radius:8px;overflow:hidden}
+.side{position:sticky;top:12px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--ink)}
+.tabs button{background:none;border:0;color:#fff;padding:12px;font-weight:700;cursor:pointer}
+.tabs button.on{background:var(--y);color:var(--ink)}
+.pad{padding:16px}
+label{display:block;font-weight:700;font-size:13px;margin:10px 0 4px}
+input,select,textarea{width:100%;border:2px solid var(--ink);border-radius:6px;padding:9px;background:#fffdf5}
+textarea{resize:vertical;line-height:1.5;font-size:14px}
+.row2{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.list{max-height:calc(100vh - 230px);overflow:auto}
+.item{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:12px 16px;border-bottom:2px solid #121a3320;cursor:pointer;width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0}
+.item:hover{background:#fff6d6}.item.on{background:var(--y);}
+.item b{font-size:15px}.item .m{font-size:12px;color:#121a33b0}
+.chip{font-weight:700;font-size:11px;padding:2px 8px;border-radius:99px;border:2px solid;align-self:center}
+.chip.draft{color:var(--amber)}.chip.pending{color:#2457d6}.chip.paid{color:var(--green)}
+.empty{padding:30px 16px;text-align:center}
+.listtools{display:flex;justify-content:space-between;padding:8px 16px;background:#f7f2e4;border-bottom:2px solid var(--ink);font-size:13px;font-weight:600}
+.listtools button{background:none;border:0;text-decoration:underline;cursor:pointer;font-weight:700}
+/* detail */
+.detail{min-height:300px}
+.dh{display:flex;justify-content:space-between;align-items:center;background:var(--y);border-bottom:3px solid var(--ink);padding:10px 16px;font-weight:700}
+.dt{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.dt h2{font-size:28px}
+.dial{display:grid;grid-template-columns:repeat(3,1fr);border:3px solid var(--ink);border-radius:99px;overflow:hidden;margin:10px 0}
+.dial div{text-align:center;padding:7px;font-weight:700;font-size:13px}.dial .on{background:var(--amber);color:#fff}.dial .on.final{background:var(--red)}.dial .on.friendly{background:var(--green)}
+.why{background:#fff6d6;border-left:6px solid var(--ink);padding:10px 14px;margin:10px 0}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 6px}
+.settled{color:var(--green);font-family:"Alfa Slab One";font-size:22px;margin:14px 0}
+.log{border-top:2px dashed var(--ink);margin-top:16px;padding-top:10px;font-size:12px;color:#121a33c0}
+.log div{padding:2px 0}
+.hint{border:2px dashed var(--ink);background:#fff6d6;padding:10px 12px;margin-top:14px;font-size:13px;border-radius:6px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;font-weight:700;transition:transform .25s;z-index:9;max-width:90vw}
+.toast.show{transform:translateX(-50%)}.toast.err{background:var(--red)}
+@media(max-width:900px){.hg,.ws{grid-template-columns:1fr}.sample{display:none}.side{position:static}.list{max-height:320px}.row2{grid-template-columns:1fr 1fr}.row2>:first-child{grid-column:1/-1}.stat{padding:10px}.stat .n{font-size:22px}.stat span.c{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+
+<header class="hero"><div class="wrap">
+  <div class="top"><div class="logo">Chase<b>Mate</b></div><div class="pill" id="status">Checking status…</div></div>
+  <div class="hg">
+    <div>
+      <h1>Chase the <mark>money</mark>, not the client.</h1>
+      <p>Paste the awkward email thread. ChaseMate reads it, picks the tone and the amount, and writes the reminder. You approve. PayPal collects.</p>
+    </div>
+    <div class="sample"><span class="stamp overdue">OVERDUE</span>
+      <div class="slab">INVOICE #118</div><div class="type">Sam, Acme Studio</div>
+      <div class="amt">$400</div><div class="type">26 days late.<br>“Can I pay in two parts?”</div></div>
+  </div>
+</div></header>
+
+<nav class="strip"><div class="wrap">
+  <button class="stat" data-f="draft"><small>Needs your approval</small><span class="n" id="s1">0</span><span class="c" id="c1"></span></button>
+  <button class="stat" data-f="pending"><small>Waiting on payment</small><span class="n" id="s2">$0</span><span class="c" id="c2"></span></button>
+  <button class="stat" data-f="paid"><small>Recovered</small><span class="n" id="s3">$0</span><span class="c" id="c3"></span></button>
+</div></nav>
+
+<main class="wrap ws">
+  <aside class="panel side">
+    <div class="tabs"><button id="tNew" class="on">+ New invoice</button><button id="tList">Invoices (<span id="cnt">0</span>)</button></div>
+    <div id="newPane" class="pad">
+      <div class="row2">
+        <div><label for="client">Client</label><input id="client" value="Sam"></div>
+        <div><label for="amount">Amount owed</label><input id="amount" type="number" min="1" value="400"></div>
+        <div><label for="cur">Currency</label><select id="cur"><option>USD</option><option>EUR</option><option>GBP</option></select></div>
+      </div>
+      <label for="thread">Email thread</label>
+      <textarea id="thread" rows="8" placeholder="Paste the email conversation here…"></textarea>
+      <div class="actions" style="margin-bottom:0">
+        <button class="btn dark" id="ask">Ask AI how to chase this</button>
+        <button class="btn" id="sampleBtn">Load sample thread</button>
+      </div>
+      <div class="hint">Nothing is sent and no money is requested until you press Approve. Payments run in PayPal Sandbox.</div>
+    </div>
+    <div id="listPane" hidden>
+      <div class="listtools"><span id="flt">All invoices</span><span><button id="showAll">Show all</button> <button id="clr">Clear drafts</button></span></div>
+      <div class="list" id="list"></div>
+    </div>
+  </aside>
+
+  <section class="panel detail" id="detail"><div class="empty"><div class="stamp draft slam">NO INVOICE YET</div><p>Load the sample thread and press <b>Ask AI</b>. Your invoice opens here.</p></div></section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), TONES=["friendly","firm","final"], LABEL={draft:"DRAFT",pending:"PENDING",paid:"PAID"};
+let inv=[], sel=null, filter="all";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=i=>String(i).padStart(3,"0");
+async function api(p,method="GET",body){
+  const r=await fetch(p,{method,headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+  if(!r.ok){let m="Something went wrong";try{m=(await r.json()).detail||m}catch{}throw new Error(m)}
+  return r.json();
+}
+let tt;function toast(m,err){const t=$("#toast");t.textContent=m;t.className="toast show"+(err?" err":"");clearTimeout(tt);tt=setTimeout(()=>t.className="toast",3200)}
+function sampleThread(){
+  const f=d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}), D=n=>{const d=new Date();d.setDate(d.getDate()-n);return f(d)};
+  return `${D(55)} - Me: Hi Sam, invoice #118 for the brand design ($400) is attached, due ${D(26)}.\n${D(40)} - Sam: Sorry, travelling this week. Will pay Friday!\n${D(12)} - Me: Hi Sam, just checking on the invoice.\n${D(5)} - Sam: Can I pay in two parts?`;
+}
+function setTab(t){
+  $("#tNew").classList.toggle("on",t==="new");$("#tList").classList.toggle("on",t==="list");
+  $("#newPane").hidden=t!=="new";$("#listPane").hidden=t!=="list";
+}
+async function load(keep=true){
+  inv=await api("/api/invoices");
+  if(!keep||!inv.find(x=>x.id===sel)) sel=(inv.find(x=>x.status==="draft")||inv[0]||{}).id||null;
+  render();
+}
+function sum(st){const a=inv.filter(x=>x.status===st);return [a.reduce((s,x)=>s+x.amount,0),a.length]}
+function render(){
+  const [d,dn]=sum("draft"),[p,pn]=sum("pending"),[r,rn]=sum("paid"), m=n=>"$"+Math.round(n).toLocaleString();
+  $("#s1").textContent=dn;$("#c1").textContent=`${m(d)} owed`;
+  $("#s2").textContent=m(p);$("#c2").textContent=`${pn} invoice${pn===1?"":"s"}`;
+  $("#s3").textContent=m(r);$("#c3").textContent=`${rn} invoice${rn===1?"":"s"}`;
+  document.querySelectorAll(".stat").forEach(b=>b.classList.toggle("on",b.dataset.f===filter));
+  $("#cnt").textContent=inv.length;
+  $("#flt").textContent=filter==="all"?"All invoices":"Showing: "+LABEL[filter].toLowerCase();
+  const rows=inv.filter(x=>filter==="all"||x.status===filter);
+  $("#list").innerHTML=rows.length?rows.map(x=>`<button class="item ${x.id===sel?"on":""}" data-id="${x.id}">
+    <b>#${num(x.id)} ${esc(x.client)}</b><span class="chip ${x.status}">${LABEL[x.status]}</span>
+    <span class="m">${esc(x.amount)} ${esc(x.currency)}</span><span class="m">${esc(x.tone||"")}</span></button>`).join("")
+    :`<div class="empty">Nothing here yet.</div>`;
+  renderDetail();
+}
+function renderDetail(){
+  const x=inv.find(i=>i.id===sel), box=$("#detail");
+  if(!x){box.innerHTML=`<div class="empty"><div class="stamp draft">NO INVOICE YET</div><p>Load the sample thread and press <b>Ask AI</b>. Your invoice opens here.</p></div>`;return}
+  const log=JSON.parse(x.log||"[]"), ti=Math.max(0,TONES.indexOf(x.tone)), isDraft=x.status==="draft";
+  box.innerHTML=`<div class="dh"><span>INVOICE No. ${num(x.id)}</span><span>${esc(x.amount)} ${esc(x.currency)}</span></div>
+  <div class="pad">
+    <div class="dt"><h2>${esc(x.client)}</h2><span class="stamp ${x.status} slam">${LABEL[x.status]}</span></div>
+    <div class="dial">${TONES.map((t,i)=>`<div class="${i===ti?"on "+t:""}">${["Friendly","Firm","Final notice"][i]}</div>`).join("")}</div>
+    <div class="why"><b>${esc((x.action||"").replace("_"," "))}.</b> ${esc(x.reasoning)}</div>
+    <label for="amt">Amount to request</label><input id="amt" type="number" value="${esc(x.amount)}" ${isDraft?"":"disabled"}>
+    <label for="msg">Message to client ${isDraft?"(edit if you like)":""}</label>
+    <textarea id="msg" rows="8" ${isDraft?"":"readonly"}>${esc(x.draft)}</textarea>
+    ${x.status==="paid"?`<div class="settled">All settled. Payment received via PayPal.</div>`:""}
+    <div class="actions">
+      ${isDraft?`<button class="btn yel" data-a="approve">Approve and create PayPal request</button>`:""}
+      ${x.status==="pending"?`<a class="btn pp" href="${esc(x.pay_url)}" target="_blank" rel="noopener">Open PayPal checkout</a>
+        <button class="btn" data-a="refresh">I paid, check status</button>
+        <button class="btn" data-a="remind">Chase again</button>
+        <button class="btn sm" data-a="sim">Simulate paid</button>`:""}
+      <button class="btn sm" data-a="del">Delete</button>
+    </div>
+    <div class="log">${log.map(l=>`<div>${new Date(l.t*1000).toLocaleTimeString()}  ${esc(l.m)}</div>`).join("")}</div>
+  </div>`;
+}
+async function run(btn,fn,ok){
+  if(btn)btn.disabled=true;
+  try{await fn();if(ok)toast(ok)}catch(e){toast(e.message,true)}
+  if(btn)btn.disabled=false;
+}
+$("#detail").addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,id=sel;
+  if(a==="approve")run(b,async()=>{await api(`/api/invoices/${id}/approve`,"POST",{amount:$("#amt").value,draft:$("#msg").value});await load()},"Approved. PayPal request created.");
+  if(a==="refresh")run(b,async()=>{await api(`/api/invoices/${id}/refresh`,"POST");await load()},"Checked with PayPal.");
+  if(a==="remind")run(b,async()=>{await api(`/api/invoices/${id}/remind`,"POST");await load()},"AI wrote a firmer reminder.");
+  if(a==="sim")run(b,async()=>{await api(`/api/invoices/${id}/simulate_paid`,"POST");await load()},"Marked as paid.");
+  if(a==="del"&&confirm("Delete this invoice?"))run(b,async()=>{await api(`/api/invoices/${id}`,"DELETE");sel=null;await load(false)},"Invoice deleted.");
+});
+$("#list").addEventListener("click",e=>{
+  const b=e.target.closest(".item");if(!b)return;sel=+b.dataset.id;render();
+  if(innerWidth<900)$("#detail").scrollIntoView({behavior:"smooth"});
+});
+document.querySelectorAll(".stat").forEach(b=>b.onclick=()=>{filter=filter===b.dataset.f?"all":b.dataset.f;setTab("list");render()});
+$("#showAll").onclick=()=>{filter="all";render()};
+$("#clr").onclick=()=>run(null,async()=>{await api("/api/clear_drafts","POST");await load(false)},"Drafts cleared.");
+$("#tNew").onclick=()=>setTab("new");$("#tList").onclick=()=>setTab("list");
+$("#sampleBtn").onclick=()=>{$("#thread").value=sampleThread();toast("Sample thread loaded (26 days overdue).")};
+$("#ask").onclick=e=>{
+  if(!$("#thread").value.trim())return toast("Paste an email thread first, or load the sample.",true);
+  const b=e.target;b.textContent="AI is reading…";
+  run(b,async()=>{
+    const r=await api("/api/analyze","POST",{client:$("#client").value||"Client",amount:$("#amount").value,currency:$("#cur").value,thread:$("#thread").value});
+    sel=r.id;filter="all";await load();setTab("list");
+    if(innerWidth<900)$("#detail").scrollIntoView({behavior:"smooth"});
+  },"AI plan ready. Review it, then approve.").then(()=>b.textContent="Ask AI how to chase this");
+};
+window.addEventListener("focus",()=>{const x=inv.find(i=>i.id===sel);if(x&&x.status==="pending")api(`/api/invoices/${x.id}/refresh`,"POST").then(()=>load()).catch(()=>{})});
+fetch("/api/config").then(r=>r.json()).then(c=>{$("#status").textContent=`AI: ${c.ai?"live":"rules engine (add API key for live AI)"} | PayPal Sandbox: ${c.paypal?"connected":"not set"}`}).catch(()=>{$("#status").textContent="Server offline"});
+$("#thread").value=sampleThread();
+load().then(()=>{if(inv.length)setTab("list")}).catch(e=>toast(e.message,true));
+</script></body></html>
