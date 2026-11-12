@@ -11,8 +11,7 @@ pip install -r requirements.txt
 cp .env.example .env        # fill in PayPal Sandbox keys (+ ANTHROPIC_API_KEY for the real AI)
 uvicorn backend.main:app --reload
 ```
-Open http://localhost:8000. Without an API key the app runs in demo mode with simple rules.
-
+Open http://localhost:8000. 
 ## PayPal Sandbox Setup
 See [docs/paypal-setup.md](docs/paypal-setup.md). Pay with a sandbox **Personal** account.
 
