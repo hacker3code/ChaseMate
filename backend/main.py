@@ -128,30 +128,109 @@ only if earlier messages were ignored; if a previous tone is given, go one level
 
 
 async def agent(client, amount, cur, thread, prev=None):
-    key = os.getenv("ANTHROPIC_API_KEY")
-    user = (f"Today's date: {date.today().isoformat()}\nClient: {client}\nAmount owed: {amount} {cur}\n"
-            f"Previous tone sent: {prev or 'none'}\nThread:\n{thread}")
-    if key:
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+
+    user = (
+        f"Today's date: {date.today().isoformat()}\n"
+        f"Client: {client}\n"
+        f"Amount owed: {amount} {cur}\n"
+        f"Previous tone sent: {prev or 'none'}\n"
+        f"Thread:\n{thread}"
+    )
+
+    # Use Gemini first when its API key is configured
+    if gemini_key:
+        model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/"
+            f"models/{model}:generateContent"
+        )
+
         async with httpx.AsyncClient(timeout=60) as c:
-            r = await c.post("https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": key, "anthropic-version": "2023-06-01"},
-                json={"model": MODEL, "max_tokens": 1000, "system": SYSTEM,
-                      "messages": [{"role": "user", "content": user}]})
+            r = await c.post(
+                url,
+                headers={
+                    "x-goog-api-key": gemini_key,
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "systemInstruction": {
+                        "parts": [{"text": SYSTEM}]
+                    },
+                    "contents": [{
+                        "role": "user",
+                        "parts": [{"text": user}]
+                    }],
+                    "generationConfig": {
+                        "responseMimeType": "application/json",
+                        "temperature": 0.3
+                    }
+                }
+            )
+
         if r.status_code != 200:
-            raise HTTPException(502, f"LLM error: {r.text[:200]}")
-        out = json.loads(re.search(r"\{.*\}", r.json()["content"][0]["text"], re.S).group(0))
+            raise HTTPException(502, f"Gemini AI error: {r.text[:300]}")
+
+        data = r.json()
+        try:
+            response_text = data["candidates"][0]["content"]["parts"][0]["text"]
+            out = json.loads(response_text)
+        except (KeyError, IndexError, TypeError, json.JSONDecodeError):
+            raise HTTPException(502, "Gemini returned an invalid response.")
+
         out["amount"] = float(out.get("amount") or amount)
         return out
+
+    # Keep Anthropic as an optional alternative
+    if anthropic_key:
+        async with httpx.AsyncClient(timeout=60) as c:
+            r = await c.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": anthropic_key,
+                    "anthropic-version": "2023-06-01"
+                },
+                json={
+                    "model": MODEL,
+                    "max_tokens": 1000,
+                    "system": SYSTEM,
+                    "messages": [{"role": "user", "content": user}]
+                }
+            )
+
+        if r.status_code != 200:
+            raise HTTPException(502, f"LLM error: {r.text[:200]}")
+
+        out = json.loads(
+            re.search(r"\{.*\}", r.json()["content"][0]["text"], re.S).group(0)
+        )
+        out["amount"] = float(out.get("amount") or amount)
+        return out
+
+    # Rules-based demo mode
     days = overdue_days(thread)
     t = 0 if days < 15 else 1 if days < 45 else 2
+
     if prev in TONES:
         t = max(t, min(TONES.index(prev) + 1, 2))
-    return {"tone": TONES[t], "action": "full_request", "amount": float(amount),
-            "reasoning": f"[Demo mode: set ANTHROPIC_API_KEY for real AI] Detected ~{days} days overdue, "
-                         f"so I chose a {TONES[t]} tone and requested the full amount.",
-            "subject": f"Payment reminder: {amount} {cur}",
-            "draft": f"Hi {client},\n\nThis is a {TONES[t]} reminder that {amount} {cur} is outstanding. "
-                     f"You can pay securely with PayPal here: {{PAY_LINK}}\n\nThank you!"}
+
+    return {
+        "tone": TONES[t],
+        "action": "full_request",
+        "amount": float(amount),
+        "reasoning": (
+            f"[Demo mode: configure an AI API key] Detected ~{days} days overdue, "
+            f"so I chose a {TONES[t]} tone and requested the full amount."
+        ),
+        "subject": f"Payment reminder: {amount} {cur}",
+        "draft": (
+            f"Hi {client},\n\nThis is a {TONES[t]} reminder that "
+            f"{amount} {cur} is outstanding. You can pay securely "
+            f"with PayPal here: {{PAY_LINK}}\n\nThank you!"
+        )
+    }
+
 
 
 async def pp_headers():
@@ -204,7 +283,14 @@ def index():
 
 @app.get("/api/config")
 def config():
-    return {"ai": bool(os.getenv("ANTHROPIC_API_KEY")), "paypal": bool(os.getenv("PAYPAL_CLIENT_ID")), "base": BASE}
+    return {
+        "ai": bool(
+            os.getenv("GEMINI_API_KEY") or
+            os.getenv("ANTHROPIC_API_KEY")
+        ),
+        "paypal": bool(os.getenv("PAYPAL_CLIENT_ID")),
+        "base": BASE
+    }
 
 
 @app.get("/api/invoices")
