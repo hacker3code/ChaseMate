@@ -29,6 +29,62 @@ def q(sql, a=(), one=False):
     c.close()
     return (rows[0] if rows else None) if one else rows
 
+def seed_demo_invoices():
+    """Insert demo invoices only when the database is empty."""
+    count = q("SELECT COUNT(*) AS total FROM invoices", one=True)["total"]
+
+    if count > 0:
+        return
+
+    samples = [
+        (
+            "Priya",
+            "Invoice #121 for Bright Bakery. Amount: $250. Due Oct 30, 2026. "
+            "The client received the invoice and has not paid yet.",
+            250, "USD", "friendly", "full_request",
+            "A friendly reminder is appropriate for this recently overdue invoice.",
+            "Friendly payment reminder - Bright Bakery",
+            "Hi Priya, just a friendly reminder that your $250 invoice "
+            "is awaiting payment. Please let me know if you have any questions. "
+            "Thank you!",
+        ),
+        (
+            "Sam",
+            "Invoice #118 for Acme Studio. Amount: $400. Due Oct 17, 2026. "
+            "Previous reminders were sent but payment is still pending.",
+            400, "USD", "firm", "full_request",
+            "The invoice is overdue and previous reminders have not resulted in payment.",
+            "Payment follow-up - Acme Studio",
+            "Hi Sam, following up on your outstanding $400 invoice. "
+            "Please let me know when we can expect payment. Thank you.",
+        ),
+        (
+            "Marco",
+            "Invoice #109 for Nova Labs. Amount: $900. Due Sep 15, 2026. "
+            "Multiple reminders have been sent without payment.",
+            900, "USD", "final", "full_request",
+            "The invoice is significantly overdue and multiple reminders remain unanswered.",
+            "Final payment reminder - Nova Labs",
+            "Hi Marco, this is a final reminder regarding your outstanding "
+            "$900 invoice. Please arrange payment as soon as possible. Thank you.",
+        ),
+    ]
+
+    for client, thread, amount, currency, tone, action, reasoning, subject, draft in samples:
+        q(
+            """INSERT INTO invoices
+            (client, thread, amount, currency, tone, action,
+             reasoning, subject, draft, status, created)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)""",
+            (client, thread, amount, currency, tone, action,
+             reasoning, subject, draft, time.time())
+        )
+
+
+@app.on_event("startup")
+def initialize_demo_data():
+    seed_demo_invoices()
+
 
 def get(i):
     r = q("SELECT * FROM invoices WHERE id=?", (i,), True)
